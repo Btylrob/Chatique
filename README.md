@@ -3,7 +3,7 @@ created: ["{{date: 06-03-2025}}"]
 aliases: ["Project: Chatique"]
 ---
 
-# 🚀 Project -> 
+# 🚀 Chatique 
 ___
 ## 🧾 Project Description
 - 
