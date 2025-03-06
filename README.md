@@ -1,8 +1,6 @@
 ---
-created: ["{{date: DD-MM-YYYY}} {{time}}"]
-aliases: ["Project: "]
-tags:
-- Project/
+created: ["{{date: 06-03-2025}}"]
+aliases: ["Project: Chatique"]
 ---
 
 # 🚀 Project -> 
@@ -39,7 +37,6 @@ ___
 - 
 ## 📦 Resources 
 [Facebook Roberta Hate Speech Model](https://huggingface.co/facebook/roberta-hate-speech-dynabench-r4-target)
-
 [Sentence Transformers](https://huggingface.co/sentence-transformers)
 - 
 ## 📂 Project Logs 
