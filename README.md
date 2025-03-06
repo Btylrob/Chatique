@@ -1,5 +1,5 @@
 ---
-created: ["{{date: 06-03-2025}}"]
+created: ["date: 06-03-2025"]
 aliases: ["Project: Chatique"]
 ---
 
