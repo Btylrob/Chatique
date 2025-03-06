@@ -36,8 +36,11 @@ ___
 ## ✅ Tasks 
 - 
 ## 📦 Resources 
+
 [Facebook Roberta Hate Speech Model](https://huggingface.co/facebook/roberta-hate-speech-dynabench-r4-target)
+
 [Sentence Transformers](https://huggingface.co/sentence-transformers)
+
 - 
 ## 📂 Project Logs 
 -
