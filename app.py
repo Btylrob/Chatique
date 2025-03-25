@@ -18,15 +18,15 @@ classifier = pipeline("text-classification", model="facebook/roberta-hate-speech
 
 def contains_similar_flagged_word(text, threshold=0.7):
     """Check if the input text contains words similar to flagged words using embeddings."""
-    words = text.lower().split()  # Tokenize input text
+    words = text.lower().split()
     word_embeddings = embedding_model.encode(words, convert_to_tensor=True)
 
     for i, word_embedding in enumerate(word_embeddings):
         similarity_scores = util.pytorch_cos_sim(word_embedding, flagged_word_embeddings)
-        max_score = torch.max(similarity_scores).item()  # Get highest similarity score
-        
+        max_score = torch.max(similarity_scores).item()
+
         if max_score >= threshold:
-            return True, words[i], max_score  # Return flagged word and similarity score
+            return True, words[i], max_score
 
     return False, None, None
 
@@ -35,26 +35,17 @@ def detect_vulgar_language(text):
     result = classifier(text)
     label = result[0]['label']
     score = result[0]['score']
-    return label, score
 
-if __name__ == "__main__":
-    while True:
-        user_input = input("Enter text to analyze (or type 'exit' to quit): ")
-        if user_input.lower() == 'exit':
-            break
+    if label == "hate":
+        return f"🚫 Hate Speech Detected (Confidence: {score:.2f})"
+    else:
+        return f"✅ No hate detected (Confidence: {score:.2f})"
 
-        # Step 1: Check for similar words in the CSV list
-        is_flagged, flagged_word, similarity = contains_similar_flagged_word(user_input)
+def analyze_text(text):
+    """Runs both detection functions and returns the final result."""
+    is_flagged, flagged_word, similarity = contains_similar_flagged_word(text)
 
-        if is_flagged:
-            print(f"⚠️ Banned: Detected similar word '{flagged_word}' (Similarity: {similarity:.2f})")
-            continue  # Skip the LLM classifier if a match is found
+    if is_flagged:
+        return f"⚠️ Banned: Detected similar word '{flagged_word}' (Similarity: {similarity:.2f})"
 
-        # Step 2: If no match, use the LLM classifier
-        label, score = detect_vulgar_language(user_input)
-        print(f"Result: {label} (Confidence: {score:.2f})")
-
-        if label == "hate":
-            print("🚫 Banned")
-        else:
-            print("✅ No hate detected")
+    return detect_vulgar_language(text)
