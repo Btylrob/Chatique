@@ -12,6 +12,7 @@ bot = telebot.TeleBot(BOT_TOKEN)
 
 user_warning={}
 ban_threshold=3
+ban_length=40
 
 curtime = time.ctime(1627908313.717886)
 
@@ -32,7 +33,7 @@ def analyze_and_respond(message):
 
         if user_warning[user_id] >= ban_threshold:
             bot.reply_to(message, "user has been banned contents logged")
-            bot.reply_to(message, f"At {curtime} User: {message.from_user.first_name} has been warned over {ban_threshold} to stop spreading vulgar language and hate speach")
+            bot.reply_to(message, f"At {curtime} User: {message.from_user.first_name} has been warned over {ban_threshold} time to stop spreading vulgar language and hate speach. {message.from_user.first_name} will be banned until {ban_length}.")
             return
 
     bot.reply_to(message, analysis_result)            
