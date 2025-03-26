@@ -31,7 +31,7 @@ def analyze_and_respond(message):
     user_id = message.from_user.id
     analysis_result = analyze_text(message.text)
    
-    if "🚫 Hate Speech Detected" or "⚠️ Vulgar Language Detected" in analysis_result:
+    if "🚫 Hate Speech Detected" in analysis_result or "⚠️ Banned: Detected similar word" in analysis_result:
         user_warning[user_id] = user_warning.get(user_id, 0) + 1
 
         if user_warning[user_id] >= ban_threshold:
