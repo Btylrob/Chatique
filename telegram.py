@@ -4,6 +4,7 @@ import telebot
 from dotenv import load_dotenv
 from app import analyze_text
 
+
 load_dotenv()
 
 BOT_TOKEN = os.getenv("API_KEY")
@@ -16,20 +17,13 @@ ban_length=40
 
 curtime = time.ctime(1627908313.717886)
 
-# Function to check if user is admin for admin only cmds
-def checkAdmin(update: Update, user_id: int) -> bool:
-    chat_id = update.message.chat_id
-    member = update.bot.get_chat_member(chat_id, user_id)
-    return member.status in ['administrator', 'creator']
-
 
 # Handles /start command and sends a welcome message
 @bot.message_handler(commands=['start', 'Start'])
 def send_welcome(message):
     bot.reply_to(message, "Welcome! 🎉 I’m your bot. How can I assist you today?")
 
-# Handle support ticket emails using email and serving form
-@bot.message_handler(commands=['ticket', 'support'])
+   
 
 # analyze and respond to all incoming messages through telegram
 @bot.message_handler(func=lambda msg: True)
