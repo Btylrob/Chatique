@@ -46,6 +46,6 @@ def analyze_text(text):
     is_flagged, flagged_word, similarity = contains_similar_flagged_word(text)
 
     if is_flagged:
-        return f"⚠️ Vulgar Language Detected: '{flagged_word}' (Similarity: {similarity:.2f})"
+        return f"⚠️ Banned: Detected similar word '{flagged_word}' (Similarity: {similarity:.2f})"
 
     return detect_vulgar_language(text)
