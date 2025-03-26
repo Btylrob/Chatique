@@ -16,6 +16,12 @@ ban_length=40
 
 curtime = time.ctime(1627908313.717886)
 
+# Function to check if user is admin for admin only cmds
+def checkAdmin(update: Update, user_id: int) -> bool:
+    chat_id = update.message.chat_id
+    member = update.bot.get_chat_member(chat_id, user_id)
+    return member.status in ['administrator', 'creator']
+
 
 # Handles /start command and sends a welcome message
 @bot.message_handler(commands=['start', 'Start'])
