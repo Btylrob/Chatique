@@ -12,8 +12,8 @@ BOT_TOKEN = os.getenv("API_KEY")
 bot = telebot.TeleBot(BOT_TOKEN)
 
 user_warning={}
-ban_threshold=3
-ban_length=40
+warning_threshold= None
+ban_length= None
 
 curtime = time.ctime(1627908313.717886)
 
@@ -23,6 +23,24 @@ curtime = time.ctime(1627908313.717886)
 def send_welcome(message):
     bot.reply_to(message, "Welcome! 🎉 I’m your bot. How can I assist you today?")
 
+# Handles request to change and set alloted time for ban ban_length
+@bot.message_handler(commands=['setban', 'sb'])
+def set_ban(message):
+    bot.reply_to(message, "Type default ban lenght to set ")
+    bot.register_next_step_handler(message, process_ban_length)
+
+#process ban threshold lengh
+
+
+
+#process ban length 
+def process_ban_length(message):
+    global ban_length
+    try: 
+        ban_length = int(message.text)
+        bot.reply_to(message, f"Ban lenght set to {ban_length} minutes.")
+    except ValueError: # If a inproper value inputed except message
+        bot.reply_to(message, "Invalid Ban Length Set")
    
 
 # analyze and respond to all incoming messages through telegram
