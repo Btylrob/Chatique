@@ -29,9 +29,20 @@ def set_ban(message):
     bot.reply_to(message, "Type default ban lenght to set ")
     bot.register_next_step_handler(message, process_ban_length)
 
-#process ban threshold lengh
+#warning threshold handler
+@bot.message_handler(commands=['sw', 'setwarning'])
+def set_warn(message):
+    bot.reply_to(message, "Type number for max length for default warnings")
+    bot.register_next_step_handler(message, process_warn)
 
-
+#process warning threshold 
+def process_warn(message):
+    global warning_threshold
+    try:
+        warning_threshold = int(message.text)
+        bot.reply_to(message, f"Warning length set to {warning_threshold}")
+    except ValueError:
+        bot.reply_to(message, "Invalid warning threshold length")
 
 #process ban length 
 def process_ban_length(message):
@@ -52,9 +63,9 @@ def analyze_and_respond(message):
     if "🚫 Hate Speech Detected" in analysis_result or "⚠️ Banned: Detected similar word" in analysis_result:
         user_warning[user_id] = user_warning.get(user_id, 0) + 1
 
-        if user_warning[user_id] >= ban_threshold:
+        if user_warning[user_id] >= warning_threshold:
             bot.reply_to(message, "user has been banned contents logged")
-            bot.reply_to(message, f"At {curtime} User: {message.from_user.first_name} has been warned over {ban_threshold} time to stop spreading vulgar language and hate speach. {message.from_user.first_name} will be banned until {ban_length}.")
+            bot.reply_to(message, f"At {curtime} User: {message.from_user.first_name} has been warned over {warning_threshold} time to stop spreading vulgar language and hate speach. {message.from_user.first_name} will be banned until {ban_length}.")
             return
 
     bot.reply_to(message, analysis_result)            
