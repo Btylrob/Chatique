@@ -2,7 +2,7 @@ import os
 import time
 import telebot
 from dotenv import load_dotenv
-from app import analyze_text
+from analyzetext import analyze_text
 
 
 load_dotenv()
