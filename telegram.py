@@ -16,7 +16,7 @@ bot = telebot.TeleBot(BOT_TOKEN)
 user_warning={}
 warning_threshold= None
 ban_length= None
-banned_list= []
+banned_list=[]
 
 
 
