@@ -16,7 +16,7 @@ bot = telebot.TeleBot(BOT_TOKEN)
 user_warning={}
 warning_threshold= None
 ban_length= None
-banned_list=[]
+banned_list= []
 
 
 
@@ -24,7 +24,7 @@ banned_list=[]
 def addbanlist(user_id):
     banned_list.append(user_id)
 
-curtime = time.ctime(d)
+curtime = time.ctime()
 
 # Handles listing of all current band members
 @bot.message_handler(commands=['lb', 'listban'])
