@@ -1,5 +1,6 @@
 import os
 import time
+import numpy as np
 import telebot
 from dotenv import load_dotenv
 from analyzetext import analyze_text
@@ -11,12 +12,25 @@ BOT_TOKEN = os.getenv("API_KEY")
 
 bot = telebot.TeleBot(BOT_TOKEN)
 
+# Variable for setting 
 user_warning={}
 warning_threshold= None
 ban_length= None
+banned_list=[]
 
-curtime = time.ctime(1627908313.717886)
 
+
+# function to add banned accounts
+def addbanlist(user_id):
+    banned_list.append(user_id)
+
+curtime = time.ctime(d)
+
+# Handles listing of all current band members
+@bot.message_handler(commands=['lb', 'listban'])
+def list_ban(message):
+    banned_array= np.array(banned_list)
+    bot.reply_to(message, f"Current Members Banned As of {curtime}: {banned_array}")
 
 # Handles /start command and sends a welcome message
 @bot.message_handler(commands=['start', 'Start'])
@@ -63,10 +77,15 @@ def analyze_and_respond(message):
     if "🚫 Hate Speech Detected" in analysis_result or "⚠️ Banned: Detected similar word" in analysis_result:
         user_warning[user_id] = user_warning.get(user_id, 0) + 1
 
-        if user_warning[user_id] >= warning_threshold:
-            bot.reply_to(message, "user has been banned contents logged")
-            bot.reply_to(message, f"At {curtime} User: {message.from_user.first_name} has been warned over {warning_threshold} time to stop spreading vulgar language and hate speach. {message.from_user.first_name} will be banned until {ban_length}.")
-            return
+    if warning_threshold is None or warning_threshold == 0:
+        bot.reply_to(message, "There is no current warning limit on users.")
+        return
+
+    if user_warning.get(user_id, 0) > warning_threshold:
+        bot.reply_to(message, "user has been banned contents logged")
+        bot.reply_to(message, f"At {curtime} User: {message.from_user.first_name} has been warned over {warning_threshold} time to stop spreading vulgar language and hate speach. {message.from_user.first_name} will be banned until {ban_length}.")
+        addbanlist(message.from_user.first_name)
+        return
 
     bot.reply_to(message, analysis_result)            
 
