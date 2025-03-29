@@ -7,7 +7,13 @@ from sentence_transformers import SentenceTransformer, util
 embedding_model = SentenceTransformer("all-MiniLM-L6-v2")
 
 # Load flagged words from CSV
-df = pd.read_csv("English.csv", header=None, names=["word"])
+try:
+    df = pd.read_csv("English.csv", header=None, names=["word"])
+
+except CSVNotFoundError:
+    print("CSV file not found")
+    exit(1)
+
 flagged_words = [word.lower() for word in df["word"].tolist()]
 
 # Convert flagged words to embeddings
