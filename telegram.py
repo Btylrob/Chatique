@@ -12,8 +12,9 @@ BOT_TOKEN = os.getenv("API_KEY")
 
 if BOT_TOKEN == None:
     raise ValueError("API key not found in env file.")
+    exit(1)
 
-print("API key retrieved from env")    
+print("API key retrieved from env")
 
 bot = telebot.TeleBot(BOT_TOKEN)
 
