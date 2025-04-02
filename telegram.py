@@ -1,9 +1,11 @@
 import os
 import time
+import threading
 import numpy as np
 import telebot
 from flask import Flask
 from dotenv import load_dotenv
+from markupsafe import escape
 from analyzetext import analyze_text
 
 
@@ -24,35 +26,21 @@ bot = telebot.TeleBot(BOT_TOKEN)
 # Flask variables
 app = Flask(__name__)
 
-@app.route('/')
-def index():
-    """Flask route to display banned names."""
-    html_template = """
-    <!DOCTYPE html>
-    <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Banned Names</title>
-        <style>
-            body { font-family: Arial, sans-serif; text-align: center; }
-            h1 { color: red; }
-            ul { list-style-type: none; padding: 0; }
-            li { font-size: 18px; margin: 5px 0; }
-        </style>
-    </head>
-    <body>
-        <h1>Banned Names List</h1>
-        <ul>
-            {% for name in banned_names %}
-                <li>{{ name }}</li>
-            {% endfor %}
-        </ul>
-    </body>
-    </html>
-    """
-    return render_template_string(html_template, banned_names=banned_names)
 
+@app.route('/banned/')
+def bannedusrs():
+    """Flask route to display banned names."""
+    global banned_list
+    if not banned_list:
+        return "no users in current banned list"
+    return f"banned users: {', '.join(map(str, banned_list))}"
+
+def run_flask():
+    if __name__ == "__main__":
+        app.run(host="0.0.0.0", port=5000)
+
+flask_thread = threading.Thread(target=run_flask, daemon=True)
+flask_thread.start()
 
 # Variables for setting 
 user_warning = {}
@@ -79,8 +67,8 @@ def list_ban(message):
         bot.reply_to(message, "No userids found in banned log")
         return
 
-    bot.reply_to(message, f"Current Members Banned As of {get_current_time}: {banned_array}")
-    return index
+    bot.reply_to(message, f"Click to view current banned members of pop http://10.0.0.73:5000/banned/")
+
 
 
 @bot.message_handler(commands=['start'])
