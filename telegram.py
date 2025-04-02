@@ -2,10 +2,12 @@ import os
 import time
 import numpy as np
 import telebot
+from flask import Flask
 from dotenv import load_dotenv
 from analyzetext import analyze_text
 
 
+# Load .env contents
 load_dotenv()
 
 BOT_TOKEN = os.getenv("API_KEY")
@@ -17,6 +19,40 @@ if BOT_TOKEN == None:
 print("API key retrieved from env")
 
 bot = telebot.TeleBot(BOT_TOKEN)
+
+
+# Flask variables
+app = Flask(__name__)
+
+@app.route('/')
+def index():
+    """Flask route to display banned names."""
+    html_template = """
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Banned Names</title>
+        <style>
+            body { font-family: Arial, sans-serif; text-align: center; }
+            h1 { color: red; }
+            ul { list-style-type: none; padding: 0; }
+            li { font-size: 18px; margin: 5px 0; }
+        </style>
+    </head>
+    <body>
+        <h1>Banned Names List</h1>
+        <ul>
+            {% for name in banned_names %}
+                <li>{{ name }}</li>
+            {% endfor %}
+        </ul>
+    </body>
+    </html>
+    """
+    return render_template_string(html_template, banned_names=banned_names)
+
 
 # Variables for setting 
 user_warning = {}
@@ -43,7 +79,8 @@ def list_ban(message):
         bot.reply_to(message, "No userids found in banned log")
         return
 
-    bot.reply_to(message, f"Current Members Banned As of {curtime}: {banned_array}")
+    bot.reply_to(message, f"Current Members Banned As of {get_current_time}: {banned_array}")
+    return index
 
 
 @bot.message_handler(commands=['start'])
@@ -101,8 +138,8 @@ def analyze_and_respond(message):
 
     if user_warning.get(user_id, 0) > warning_threshold:
         bot.reply_to(message, "user has been banned contents logged")
-        bot.reply_to(message, f"At {curtime} User: {message.from_user.first_name} has been warned over {warning_threshold} time to stop spreading vulgar language and hate speach. {message.from_user.first_name} will be banned until {ban_length}.")
-        addbanlist(message.from_user.first_name)
+        bot.reply_to(message, f"At {time.ctime} User: {message.from_user.first_name} has been warned over {warning_threshold} time to stop spreading vulgar language and hate speach. {message.from_user.first_name} will be banned until {ban_length}.")
+        add_ban_list(message.from_user.first_name)
         return
 
     bot.reply_to(message, analysis_result)            
