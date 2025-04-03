@@ -40,13 +40,13 @@ ___
 - Function to ban user if exceeds warning threshold
 ## 📦 Resources 
 
-. [Facebook Roberta Hate Speech Model](https://huggingface.co/facebook/roberta-hate-speech-dynabench-r4-target)
+- [Facebook Roberta Hate Speech Model](https://huggingface.co/facebook/roberta-hate-speech-dynabench-r4-target)
 
-. [Sentence Transformers](https://huggingface.co/sentence-transformers)
+- [Sentence Transformers](https://huggingface.co/sentence-transformers)
 
-. [Telegram API](https://core.telegram.org/)
+- [Telegram API](https://core.telegram.org/)
 
-. [Flask](https://flask.palletsprojects.com/en/stable/)
+- [Flask](https://flask.palletsprojects.com/en/stable/)
 
 
 ## 📂 Project Logs 
