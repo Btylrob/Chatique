@@ -46,6 +46,8 @@ def run_flask():
     """Flask page deployed local network for testing purposes"""
     if __name__ == "__main__":
         app.run(host="0.0.0.0", port=5000)
+    else:
+        bot.reply_to(message, "Failed to connect to port 5000")
 
 # Deploy flask application on a seperate thread
 flask_thread = threading.Thread(target=run_flask, daemon=True)
