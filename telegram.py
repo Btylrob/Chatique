@@ -23,12 +23,19 @@ print("API key retrieved from env")
 bot = telebot.TeleBot(BOT_TOKEN)
 
 
+# Variables for setting 
+user_warning = {}
+warning_threshold = None
+ban_length = None
+banned_list = []
+
+
 # Flask variables
 app = Flask(__name__)
 
-
+# Flask banned users page deployment
 @app.route('/banned/')
-def bannedusrs():
+def banned_users():
     """Flask route to display banned names."""
     global banned_list
     if not banned_list:
@@ -36,17 +43,14 @@ def bannedusrs():
     return f"banned users: {', '.join(map(str, banned_list))}"
 
 def run_flask():
+    """Flask page deployed local network for testing purposes"""
     if __name__ == "__main__":
         app.run(host="0.0.0.0", port=5000)
 
+# Deploy flask application on a seperate thread
 flask_thread = threading.Thread(target=run_flask, daemon=True)
 flask_thread.start()
 
-# Variables for setting 
-user_warning = {}
-warning_threshold = None
-ban_length = None
-banned_list = []
 
 def get_current_time():
     """Returns the current time as a string."""
@@ -68,7 +72,6 @@ def list_ban(message):
         return
 
     bot.reply_to(message, f"Click to view current banned members of pop http://10.0.0.73:5000/banned/")
-
 
 
 @bot.message_handler(commands=['start'])
