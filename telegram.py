@@ -3,7 +3,7 @@ import time
 import threading
 import numpy as np
 import telebot
-from flask import Flask
+from flask import Flask, render_template
 from dotenv import load_dotenv
 from markupsafe import escape
 from analyzetext import analyze_text
@@ -41,6 +41,11 @@ def banned_users():
     if not banned_list:
         return "no users in current banned list"
     return f"banned users: {', '.join(map(str, banned_list))}"
+
+@app.errorhandler(404)
+def page_not_found(e):
+    """Return 404 page if error"""
+    return render_template("404.html.jinja"), 404
 
 def run_flask():
     """Flask page deployed local network for testing purposes"""
