@@ -1,8 +1,8 @@
 import os
 import time
 import threading
-import numpy as np
 import telebot
+import numpy as np
 from flask import Flask, render_template
 from dotenv import load_dotenv
 from markupsafe import escape
@@ -116,7 +116,7 @@ def process_ban_length(message):
     global ban_length
     try: 
         ban_length = int(message.text)
-        bot.reply_to(message, f"Ban lenght set to {ban_length} minutes.")
+        bot.reply_to(message, f"Ban lenght set to {ban_length * 1440} days.")
     except ValueError:
         bot.reply_to(message, "Invalid ban legnth set please input a real number")
    
