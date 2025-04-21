@@ -146,6 +146,7 @@ def proccess_flag_word(message):
 def analyze_and_respond(message):
     """Analyze and respond to all incoming message through telegram and pass warning functions"""
     user_id = message.from_user.id
+    chat_id = message.chat.id
     analysis_result = analyze_text(message.text)
 
     if "🚫 Hate Speech Detected" in analysis_result or "⚠️ Banned: Detected similar word" in analysis_result:
@@ -162,6 +163,7 @@ def analyze_and_respond(message):
             f"At {time.ctime} User: {message.from_user.first_name} has been warned over {warning_threshold} time to stop spreading vulgar language and hate speach. {message.from_user.first_name} will be banned until {ban_length}."
         )
         add_ban_list(message.from_user.first_name)
+        bot.kick_chat_member(chat_id, user_id)
         return
 
     bot.reply_to(message, analysis_result)
