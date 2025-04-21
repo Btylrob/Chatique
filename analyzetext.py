@@ -17,10 +17,13 @@ except CSVNotFoundError:
 flagged_words = [word.lower() for word in df["word"].tolist()]
 
 # Convert flagged words to embeddings
-flagged_word_embeddings = embedding_model.encode(flagged_words, convert_to_tensor=True)
+flagged_word_embeddings = embedding_model.encode(flagged_words,
+                                                 convert_to_tensor=True)
 
 # Load hate speech classifier
-classifier = pipeline("text-classification", model="facebook/roberta-hate-speech-dynabench-r4-target")
+classifier = pipeline("text-classification",
+                      model="facebook/roberta-hate-speech-dynabench-r4-target")
+
 
 def contains_similar_flagged_word(text, threshold=0.7):
     """Check if the input text contains words similar to flagged words using embeddings."""
@@ -28,13 +31,15 @@ def contains_similar_flagged_word(text, threshold=0.7):
     word_embeddings = embedding_model.encode(words, convert_to_tensor=True)
 
     for i, word_embedding in enumerate(word_embeddings):
-        similarity_scores = util.pytorch_cos_sim(word_embedding, flagged_word_embeddings)
+        similarity_scores = util.pytorch_cos_sim(word_embedding,
+                                                 flagged_word_embeddings)
         max_score = torch.max(similarity_scores).item()
 
         if max_score >= threshold:
             return True, words[i], max_score
 
     return False, None, None
+
 
 def detect_vulgar_language(text):
     """Classify the input text using the hate speech detection model."""
@@ -46,6 +51,7 @@ def detect_vulgar_language(text):
         return f"🚫 Hate Speech Detected (Confidence: {score:.2f})"
     else:
         return f"✅ No hate detected (Confidence: {score:.2f})"
+
 
 def analyze_text(text):
     """Runs both detection functions and returns the final result."""
