@@ -2,6 +2,7 @@ import os
 import time
 import threading
 import telebot
+import json
 import numpy as np
 from flask import Flask, render_template
 from dotenv import load_dotenv
@@ -27,38 +28,9 @@ warning_threshold = None
 ban_length = None
 banned_list = []
 flagged_word = []
+rule_book = []
 
-# Flask variables
-app = Flask(__name__)
-
-
-# Flask banned users page deployment
-@app.route('/banned/')
-def banned_users():
-    """Flask route to display banned names."""
-    global banned_list
-    if not banned_list:
-        return "no users in current banned list"
-    return f"banned users: {', '.join(map(str, banned_list))}"
-
-
-@app.errorhandler(404)
-def page_not_found(e):
-    """Return 404 page if error"""
-    return render_template("404.html.jinja"), 404
-
-
-def run_flask():
-    """Flask page deployed local network for testing purposes"""
-    if __name__ == "__main__":
-        app.run(host="0.0.0.0", port=5000)
-    else:
-        bot.reply_to(message, "Failed to connect to port 5000")
-
-
-# Deploy flask application on a seperate thread
-flask_thread = threading.Thread(target=run_flask, daemon=True)
-flask_thread.start()
+file_path = "rules.json"
 
 
 def get_current_time():
@@ -76,6 +48,11 @@ def set_flagged_word(message):
     bot.reply_to(message, "Type flagged word to add to register")
     bot.register_next_step_handler(message, proccess_flag_word)
 
+@bot.message_handler(commands=['sr', 'setrulebook'])
+def set_rule(message):
+    bot.reply_to(message, "Type Rules out in (1. ex. Rule format) for said group")
+    bot.register_next_step_handler(message, process_rule_book)
+
 
 @bot.message_handler(commands=['lb', 'listban'])
 def list_ban(message):
@@ -86,10 +63,6 @@ def list_ban(message):
         bot.reply_to(message, "No userids found in banned log")
         return
 
-    bot.reply_to(
-        message,
-        f"Click to view current banned members of pop http://10.0.0.73:5000/banned/"
-    )
 
 
 @bot.message_handler(commands=['start'])
@@ -142,6 +115,16 @@ def proccess_flag_word(message):
     except ValueError:
         bot.reply_to(message, "Please enter one word at a time")
 
+def process_rule_book(message):
+    """insert rule into json file"""
+    global rule_book
+    try:
+        rule_book = str(message.text)
+        with open(file_path, 'w') as file:
+            json.dump(rule_book, file, indent = 4)
+    except ValueError:
+        bot.reply_to(message, "cannot append list into json file")
+
 @bot.message_handler(func=lambda msg: True)
 def analyze_and_respond(message):
     """Analyze and respond to all incoming message through telegram and pass warning functions"""
@@ -149,7 +132,7 @@ def analyze_and_respond(message):
     chat_id = message.chat.id
     analysis_result = analyze_text(message.text)
 
-    if "🚫 Hate Speech Detected" in analysis_result or "⚠️ Banned: Detected similar word" in analysis_result:
+    if "🚫 Hate Speech Detected" in analysis_result or "⚠️ Banned: Detected similar word" in analysis_result or "⚠️ Flagged Emoji Detected":
         user_warning[user_id] = user_warning.get(user_id, 0) + 1
 
     if warning_threshold is None or warning_threshold == 0:
