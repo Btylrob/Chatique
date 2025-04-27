@@ -1,3 +1,4 @@
 .env
 __pycache__
 commands.txt
+csv_data/
