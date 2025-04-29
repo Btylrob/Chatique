@@ -28,7 +28,7 @@ warning_threshold = None
 ban_length = None
 banned_list = []
 flagged_word = []
-rule_book = []
+rule_book = ()
 
 file_path = "rules.json"
 
@@ -48,6 +48,12 @@ def set_flagged_word(message):
     bot.reply_to(message, "Type flagged word to add to register")
     bot.register_next_step_handler(message, proccess_flag_word)
 
+@bot.message_handler(commands=['dr', 'deleterule'])
+def delete_rule(message):
+    """Handles deletion of said rule in json file"""
+    bot.reply_to(message, "Type the number of which rule you want to delete")
+    bot.register_next_step_handler(message, process_delete_rule)
+
 @bot.message_handler(commands=['sr', 'setrulebook'])
 def set_rule(message):
     bot.reply_to(message, "Type Rules out in (1. ex. Rule format) for said group")
@@ -63,7 +69,21 @@ def list_ban(message):
         bot.reply_to(message, "No userids found in banned log")
         return
 
+@bot.message_handler(commands=['r', 'rules'])
+def list_rules(message):
+    """List rules that are stored in JSON"""
+    try:
+        with open(file_path, 'r') as file:
+            rules = json.load(file)
+    except (FileNotFoundError, json.JSONDecodeError):
+        rules = {}
 
+    if not rules:
+        bot.reply_to(message, "No rules found.")
+        return
+
+    formatted_rules = "\n".join(f"{idx+1}. {rule_Obj['rule']}" for idx, rule_Obj in enumerate(rules.values()))
+    bot.reply_to(message, f"📜 Group Rules:\n{formatted_rules}")
 
 @bot.message_handler(commands=['start'])
 def send_welcome(message):
@@ -84,6 +104,29 @@ def set_warn(message):
     """Handles request to set warning threshold"""
     bot.reply_to(message, "Type number for max length for default warnings")
     bot.register_next_step_handler(message, process_warn)
+
+def process_delete_rule(message):
+    """process deletion in json"""
+    try:
+        index_to_pop = int(message.text)
+        with open(file_path, 'r') as file:
+            rules = json.load(file)
+
+        keys = list(rules.keys())
+        if 0 <= index_to_pop < len(keys):
+            removed_key = keys[index_to_pop]
+            removed_rule = rules.pop(removed_key)
+
+            with open("rules.json", 'w') as file:
+                json.dump(rules, file, indent= 4)
+        
+            bot.reply_to(message, f"Rule {removed_rule} deleted")
+
+        else:
+            bot.reply_to(message, "Rule number does not exist")
+
+    except Exception as e:
+        bot.reply_to(message, f"failed to delete error: {e}")
 
 
 def process_warn(message):
@@ -117,13 +160,23 @@ def proccess_flag_word(message):
 
 def process_rule_book(message):
     """insert rule into json file"""
-    global rule_book
+    new_rule = message.text.strip()
     try:
-        rule_book = str(message.text)
-        with open(file_path, 'w') as file:
-            json.dump(rule_book, file, indent = 4)
-    except ValueError:
-        bot.reply_to(message, "cannot append list into json file")
+        if os.path.exists(file_path):
+            with open(file_path, 'r') as file:
+                rules = json.load(file)
+        else:
+            rules = {}
+    except (FileNotFoundError, json.JSONDecodeError):
+        rules = {}
+    
+    new_key = f"rule_{len(rules) + 1}"
+    rules[new_key] = {"rule": new_rule}
+
+    with open(file_path, 'w') as file:
+        json.dump(rules, file, indent=4)
+
+    bot.reply_to(message, f"Rule added: {new_rule}")
 
 @bot.message_handler(func=lambda msg: True)
 def analyze_and_respond(message):
