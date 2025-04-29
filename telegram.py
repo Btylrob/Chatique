@@ -144,7 +144,7 @@ def process_ban_length(message):
     global ban_length
     try:
         ban_length = int(message.text)
-        bot.reply_to(message, f"Ban lenght set to {ban_length * 1440} days.")
+        bot.reply_to(message, f"Ban lenght set to {ban_length} days.")
     except ValueError:
         bot.reply_to(message,
                      "Invalid ban legnth set please input a real number")
@@ -196,7 +196,7 @@ def analyze_and_respond(message):
         bot.reply_to(message, "user has been banned contents logged")
         bot.reply_to(
             message,
-            f"At {time.ctime} User: {message.from_user.first_name} has been warned over {warning_threshold} time to stop spreading vulgar language and hate speach. {message.from_user.first_name} will be banned until {ban_length}."
+            f"At {time.ctime()} User: {message.from_user.first_name} has been warned over {warning_threshold} time to stop spreading vulgar language and hate speach. {message.from_user.first_name} will be banned until {ban_length}."
         )
         add_ban_list(message.from_user.first_name)
         bot.kick_chat_member(chat_id, user_id)
