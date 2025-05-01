@@ -1,21 +1,16 @@
----
-created: ["date: 06-03-2025"]
-aliases: ["Project: Chatique"]
----
-
 # 🚀 Chatique 
 ___
 ## 🧾 Project Description
 - 
 ---
 ## 📢 Project information
+Project Alias:: Chatique
+Creator:: Brandon Robinson
 Created:: {{date: 06-03-2025}} 
-Completed:: 
-Tags:: 
+Tags:: ML, Roberta, Telegram, Sentence Transformers, Tensorflow 
 
 ## 🧲Published
-- HuggingFace::
-- GitHub::
+- GitHub:: https://github.com/Btylrob/Chatique
 ___
 ## 🎯 Objective
 
@@ -33,11 +28,9 @@ ___
 	1. During this project I learned about Pythons multithreading process which allows multiple threads execute at the same time within a single process. I thought this was very interesting as
            in Go which im more familiar with uses Go routines.
    	2. As this was my first python project another thing I learned was about the basic workings around Flask web application framework. I found the official Flask documentation very helpful 	  which I will link below.
-## ✅ Tasks 
-- Add a HTML user interface to flask application
-- Deploy flask application to a custom domain based on group-Id
-- Deploy image recognition to detect adult imagery and nsfw content
-- Function to ban user if exceeds warning threshold
+## ✅ Tasks
+[ ] Apply a image-recognition model to recognize nsfw images.
+[ ] Implement a better file structure for Chatique and focus on readbility and upgradebility. 
 ## 📦 Resources 
 
 - [Facebook Roberta Hate Speech Model](https://huggingface.co/facebook/roberta-hate-speech-dynabench-r4-target)
@@ -45,9 +38,6 @@ ___
 - [Sentence Transformers](https://huggingface.co/sentence-transformers)
 
 - [Telegram API](https://core.telegram.org/)
-
-- [Flask](https://flask.palletsprojects.com/en/stable/)
-
 
 ## 📂 Project Logs 
 -
