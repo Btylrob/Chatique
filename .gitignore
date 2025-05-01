@@ -1,4 +1,7 @@
 .env
 __pycache__
 commands.txt
-csv_data/
+app.log
+rules.json
+flaggedwords.json
+README.md
