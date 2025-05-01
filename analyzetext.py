@@ -1,75 +1,155 @@
+import logging
 import pandas as pd
 import torch
 import emoji
 from transformers import pipeline
 from sentence_transformers import SentenceTransformer, util
 
-# Load the embedding model
+# Logger Module
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.DEBUG)  
+
+formatter = logging.Formatter('%(asctime)s [%(levelname)s] %(message)s')
+
+info_handler = logging.FileHandler('app.log')
+info_handler.setLevel(logging.INFO)
+info_handler.setFormatter(formatter)
+
+error_handler = logging.FileHandler('app.log')
+error_handler.setLevel(logging.ERROR)
+error_handler.setFormatter(formatter)
+
+critical_handler = logging.FileHandler("app.log")
+critical_handler.setLevel(logging.CRITICAL)
+critical_handler.setFormatter(formatter)
+
+if logger.hasHandlers():
+    logger.handlers.clear()
+
+# Add handlers to the logger
+logger.addHandler(info_handler)
+logger.addHandler(error_handler)
+logger.addHandler(critical_handler)
+
+
+# ─────────────────────────────────────────────
+# 🔠 Load sentence embedding model
 embedding_model = SentenceTransformer("all-MiniLM-L6-v2")
 
+# ─────────────────────────────────────────────
+# 🌐 Load flagged URL extensions
 try:
-    pf = pd.read_csv("Emoji.csv", header=None, names=["emoji"])
-    # Convert emojis to text form
-    flagged_emojis = [emoji.demojize(e.strip()) for e in pf["emoji"].tolist()]
-    print(f"✅ Loaded flagged emojis: {flagged_emojis}")
+    pf = pd.read_csv("csv_data/url.csv")  # using real header
+    flagged_url = [
+        ext.strip().lower() for ext in pf["extension"].tolist()
+        if isinstance(ext, str) and ext.startswith(".")
+    ]
+    logger.info(f"✅ Loaded {len(flagged_url)} flagged URL extensions from url.csv.")
+    print(f"✅ Loaded {len(flagged_url)} flagged URL extensions.")
 except FileNotFoundError:
-    print("❌ Emoji.csv file not found.")
+    print("❌ url.csv not found.")
+    flagged_url = []
+
+
+def contains_flagged_url(text):
+    text = text.lower()
+    for ext in flagged_url:
+        if ext in text:
+            return True, ext
+    return False, None
+
+
+# ─────────────────────────────────────────────
+# 😊 Load flagged emojis
+try:
+    emoji_df = pd.read_csv("csv_data/Emoji.csv")  # uses header
+    flagged_emojis = [
+        emoji.demojize(str(e).strip()) for e in emoji_df["emoji"].tolist()
+    ]
+    logger.info(
+        f"✅ Loaded {len(flagged_emojis)} flagged emojis from Emoji.csv.")
+    print(f"✅ Loaded {len(flagged_emojis)} flagged emojis.")
+except FileNotFoundError:
+    print("❌ Emoji.csv not found.")
     flagged_emojis = []
 
-def contains_flagged_emoji(text):
-    # Convert full message to demojized form
-    demojized_text = emoji.demojize(text)
 
+def contains_flagged_emoji(text):
+    demojized_text = emoji.demojize(text)
     for e in flagged_emojis:
         if e in demojized_text:
             return True, e
     return False, None
 
-# Load flagged words from CSV
+
+# ─────────────────────────────────────────────
+# 🚫 Load flagged words and encode them
 try:
-    df = pd.read_csv("English.csv", header=None, names=["word"])
+    word_df = pd.read_csv("csv_data/English.csv")  # uses header
+    flagged_words = [str(word).lower() for word in word_df["word"].tolist()]
+    flagged_word_embeddings = embedding_model.encode(flagged_words,
+                                                     convert_to_tensor=True)
+    logger.info(
+        f"✅ Loaded and encoded {len(flagged_words)} flagged words from English.csv."
+    )
+    print(f"✅ Loaded and encoded {len(flagged_words)} flagged words.")
 except FileNotFoundError:
-    print("CSV file English.csv not found")
-    exit(1)
+    print("❌ English.csv not found.")
+    flagged_words = []
+    flagged_word_embeddings = torch.tensor([])
 
-flagged_words = [word.lower() for word in df["word"].tolist()]
-flagged_word_embeddings = embedding_model.encode(flagged_words, convert_to_tensor=True)
-
-# Load hate speech classifier
-classifier = pipeline("text-classification", model="facebook/roberta-hate-speech-dynabench-r4-target")
 
 def contains_similar_flagged_word(text, threshold=0.7):
     words = text.lower().split()
     word_embeddings = embedding_model.encode(words, convert_to_tensor=True)
 
     for i, word_embedding in enumerate(word_embeddings):
-        similarity_scores = util.pytorch_cos_sim(word_embedding, flagged_word_embeddings)
+        similarity_scores = util.pytorch_cos_sim(word_embedding,
+                                                 flagged_word_embeddings)
         max_score = torch.max(similarity_scores).item()
         if max_score >= threshold:
             return True, words[i], max_score
-
     return False, None, None
+
+
+# ─────────────────────────────────────────────
+# 🧠 Load hate speech classifier
+classifier = pipeline("text-classification",
+                      model="facebook/roberta-hate-speech-dynabench-r4-target")
+
 
 def detect_vulgar_language(text):
     result = classifier(text)
     label = result[0]['label']
     score = result[0]['score']
-
     if label == "hate":
         return f"🚫 Hate Speech Detected (Confidence: {score:.2f})"
-    else:
-        return f"✅ No hate detected (Confidence: {score:.2f})"
+    return f"✅ No hate detected (Confidence: {score:.2f})"
 
+
+# ─────────────────────────────────────────────
+# 📊 Main analysis function
 def analyze_text(text):
+    results = []
+
     # Emoji check
     has_emoji, emoji_found = contains_flagged_emoji(text)
     if has_emoji:
-        return f"⚠️ Flagged Emoji Detected: '{emoji_found}'"
+        results.append(f"⚠️ Flagged Emoji Detected: '{emoji_found}'")
+
+    # URL check
+    has_url, url_found = contains_flagged_url(text)
+    if has_url:
+        results.append(f"⚠️ Flagged URL Detected: '{url_found}'")
 
     # Similar-word check
     is_flagged, flagged_word, similarity = contains_similar_flagged_word(text)
     if is_flagged:
-        return f"⚠️ Banned: Detected similar word '{flagged_word}' (Similarity: {similarity:.2f})"
+        results.append(
+            f"⚠️ Banned Word Detected: '{flagged_word}' (Similarity: {similarity:.2f})"
+        )
 
-    # Hate speech detection
-    return detect_vulgar_language(text)
+    # Hate speech check
+    results.append(detect_vulgar_language(text))
+
+    return "\n".join(results)
