@@ -59,8 +59,6 @@
   <sub>null</sub>
 </p>
 
-### Omegle
-
 
 ## Installation (Manual)
 
