@@ -6,7 +6,6 @@ from transformers import pipeline
 from sentence_transformers import SentenceTransformer, util
 from logger_config import logger
 
-
 # ─────────────────────────────────────────────
 # 🔠 Load sentence embedding model
 embedding_model = SentenceTransformer("all-MiniLM-L6-v2")
@@ -19,7 +18,8 @@ try:
         ext.strip().lower() for ext in pf["extension"].tolist()
         if isinstance(ext, str) and ext.startswith(".")
     ]
-    logger.info(f"✅ Loaded {len(flagged_url)} flagged URL extensions from url.csv.")
+    logger.info(
+        f"✅ Loaded {len(flagged_url)} flagged URL extensions from url.csv.")
     print(f"✅ Loaded {len(flagged_url)} flagged URL extensions.")
 except FileNotFoundError:
     log.error("❌ url.csv not found.")
