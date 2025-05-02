@@ -4,32 +4,7 @@ import torch
 import emoji
 from transformers import pipeline
 from sentence_transformers import SentenceTransformer, util
-
-# Logger Module
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.DEBUG)  
-
-formatter = logging.Formatter('%(asctime)s [%(levelname)s] %(message)s')
-
-info_handler = logging.FileHandler('app.log')
-info_handler.setLevel(logging.INFO)
-info_handler.setFormatter(formatter)
-
-error_handler = logging.FileHandler('app.log')
-error_handler.setLevel(logging.ERROR)
-error_handler.setFormatter(formatter)
-
-critical_handler = logging.FileHandler("app.log")
-critical_handler.setLevel(logging.CRITICAL)
-critical_handler.setFormatter(formatter)
-
-if logger.hasHandlers():
-    logger.handlers.clear()
-
-# Add handlers to the logger
-logger.addHandler(info_handler)
-logger.addHandler(error_handler)
-logger.addHandler(critical_handler)
+from logger_config import logger
 
 
 # ─────────────────────────────────────────────
@@ -47,6 +22,7 @@ try:
     logger.info(f"✅ Loaded {len(flagged_url)} flagged URL extensions from url.csv.")
     print(f"✅ Loaded {len(flagged_url)} flagged URL extensions.")
 except FileNotFoundError:
+    log.error("❌ url.csv not found.")
     print("❌ url.csv not found.")
     flagged_url = []
 
@@ -70,6 +46,7 @@ try:
         f"✅ Loaded {len(flagged_emojis)} flagged emojis from Emoji.csv.")
     print(f"✅ Loaded {len(flagged_emojis)} flagged emojis.")
 except FileNotFoundError:
+    log.error("❌ Emoji.csv not found.")
     print("❌ Emoji.csv not found.")
     flagged_emojis = []
 
@@ -94,6 +71,7 @@ try:
     )
     print(f"✅ Loaded and encoded {len(flagged_words)} flagged words.")
 except FileNotFoundError:
+    logger.error("❌ English.csv not found.")
     print("❌ English.csv not found.")
     flagged_words = []
     flagged_word_embeddings = torch.tensor([])

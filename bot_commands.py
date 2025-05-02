@@ -1,94 +1,42 @@
-import csv
 import os
 import time
-import threading
-import logging
-import telebot
 import json
 import numpy as np
-from dotenv import load_dotenv
-from markupsafe import escape
+from config import bot, user_warning, warning_threshold, ban_length, banned_list
+from logger_config import logger
 from analyzetext import analyze_text
-
-# Logger Module
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.DEBUG)  
-
-formatter = logging.Formatter('%(asctime)s [%(levelname)s] %(message)s')
-
-info_handler = logging.FileHandler('app.log')
-info_handler.setLevel(logging.INFO)
-info_handler.setFormatter(formatter)
-
-error_handler = logging.FileHandler('app.log')
-error_handler.setLevel(logging.ERROR)
-error_handler.setFormatter(formatter)
-
-critical_handler = logging.FileHandler("app.log")
-critical_handler.setLevel(logging.CRITICAL)
-critical_handler.setFormatter(formatter)
-
-if logger.hasHandlers():
-    logger.handlers.clear()
-
-# Add handlers to the logger
-logger.addHandler(info_handler)
-logger.addHandler(error_handler)
-logger.addHandler(critical_handler)
-
-# Load .env contents
-load_dotenv()
-
-BOT_TOKEN = os.getenv("API_KEY")
-
-if BOT_TOKEN == None:
-    logger.critical(
-        "API key not found can not load successfully application will fail")
-    exit(1)
-
-logger.info("✅ API key successfully loaded from .env")
-
-bot = telebot.TeleBot(BOT_TOKEN)
-
-# Variables for setting
-user_warning = {}
-warning_threshold = None
-ban_length = None
-banned_list = []
-flagged_word = []
-rule_book = ()
 
 rule_file_path = "rules.json"
 flag_word_file_path = "flaggedwords.json"
 
+# Handler Functions
 
 def add_ban_list(user_id: int):
     """Add select user to the banned list."""
     banned_list.append(user_id)
 
 
-@bot.message_handler(commands=['fw', 'flagword'])
+
 def set_flagged_word(message):
     """Handles additional flagged word specific org might want to add"""
     bot.reply_to(message, "Type flagged word to add to register")
     bot.register_next_step_handler(message, process_flag_word)
 
 
-@bot.message_handler(commands=['dr', 'deleterule'])
+
 def delete_rule(message):
     """Handles deletion of said rule in json file"""
     bot.reply_to(message, "Type the number of which rule you want to delete")
     bot.register_next_step_handler(message, process_delete_rule)
 
 
-@bot.message_handler(commands=['sr', 'setrulebook'])
 def set_rule(message):
     bot.reply_to(message,
                  "Type Rules out in (1. ex. Rule format) for said group")
     bot.register_next_step_handler(message, process_rule_book)
 
 
-@bot.message_handler(commands=['lb', 'listban'])
+
 def list_banned_users(message):
     """Handles listing of all current banned members"""
     banned_array = np.array(banned_list)
@@ -99,7 +47,7 @@ def list_banned_users(message):
         return
 
 
-@bot.message_handler(commands=['r', 'rules'])
+
 def list_rules(message):
     """List rules that are stored in JSON"""
     try:
@@ -118,7 +66,7 @@ def list_rules(message):
     bot.reply_to(message, f"📜 Group Rules:\n{formatted_rules}")
 
 
-@bot.message_handler(commands=['start'])
+
 def send_welcome(message):
     """Handles the start cmd sending a welcome message"""
     logger.info(f"{message.from_user.id} started the start cmd")
@@ -126,14 +74,14 @@ def send_welcome(message):
                  "Welcome! 🎉 I’m your bot. How can I assist you today?")
 
 
-@bot.message_handler(commands=['setban', 'sb'])
+
 def set_ban_lenth(message):
     """Handles request to change alloted time for ban lengths"""
     bot.reply_to(message, "Type default ban lenght to set ")
     bot.register_next_step_handler(message, process_ban_length)
 
 
-@bot.message_handler(commands=['sw', 'setwarning'])
+
 def set_warning_threshold(message):
     """Handles request to set warning threshold"""
     bot.reply_to(message, "Type number for max length for default warnings")
@@ -240,7 +188,7 @@ def process_rule_book(message):
     bot.reply_to(message, f"Rule added: {new_rule}")
 
 
-@bot.message_handler(func=lambda msg: True)
+
 def analyze_and_respond(message):
     """Analyze and respond to all incoming message through telegram and pass warning functions"""
     user_id = message.from_user.id
@@ -270,6 +218,3 @@ def analyze_and_respond(message):
 
     bot.reply_to(message, analysis_result)
 
-
-# Keep the bot running
-bot.infinity_polling()
