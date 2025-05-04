@@ -147,7 +147,7 @@ Visit our [official blog] for more tips and tutorials.
 
 -   All the people who starred or contributed to this repo 😍.
 
-[![Stargazers](https://reporoster.com/stars/Btylrob/Chatique)](https://github.com/hacksider/Deep-Live-Cam/stargazers)
+[![Stargazers](https://reporoster.com/stars/Btylrob/Chatique)]
 
 
 
