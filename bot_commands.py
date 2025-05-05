@@ -1,7 +1,7 @@
 import os
-import time
 import json
-import numpy as np
+import html
+import mistune
 from config import bot, user_warning, warning_threshold, ban_length, banned_list
 from logger_config import logger
 from analyzetext import analyze_text
@@ -11,17 +11,16 @@ flag_word_file_path = "flaggedwords.json"
 
 # Handler Functions
 
+
 def add_ban_list(user_id: int):
     """Add select user to the banned list."""
     banned_list.append(user_id)
-
 
 
 def set_flagged_word(message):
     """Handles additional flagged word specific org might want to add"""
     bot.reply_to(message, "Type flagged word to add to register")
     bot.register_next_step_handler(message, process_flag_word)
-
 
 
 def delete_rule(message):
@@ -36,7 +35,6 @@ def set_rule(message):
     bot.register_next_step_handler(message, process_rule_book)
 
 
-
 def list_banned_users(message):
     """Handles listing of all current banned members"""
     banned_array = np.array(banned_list)
@@ -47,12 +45,11 @@ def list_banned_users(message):
         return
 
 
-
 def list_rules(message):
     """List rules that are stored in JSON"""
     try:
-        with open(rule_file_path, 'r') as file:
-            rules = json.load(file)
+        with open(rule_file_path, 'r') as f:
+            rules = json.load(f)
     except (FileNotFoundError, json.JSONDecodeError):
         rules = {}
 
@@ -66,6 +63,34 @@ def list_rules(message):
     bot.reply_to(message, f"📜 Group Rules:\n{formatted_rules}")
 
 
+def chatique_help(message):
+    """Handles execution of user custom submitted markdown rules page"""
+    logger.info(f"{message.from_user.id} started the markdown rule cmd")
+
+    def escape_markdown(text):
+        """Escape only the necessary characters for MarkdownV2"""
+        escape_chars = r'[]()~`>#+-=|{}.!\\'
+        return ''.join(['\\' + c if c in escape_chars else c for c in text])
+
+    try:
+        with open('example.txt', 'r', encoding='utf-8') as f:
+            raw_md = f.read()
+            logger.info("example.txt opened")
+
+        safe_text = escape_markdown(raw_md)
+
+        print(safe_text)  # Check the safe text
+
+        bot.send_message(
+            chat_id=message.chat.id,
+            text=safe_text,
+            parse_mode='MarkdownV2'  # Tells Telegram to interpret as MarkdownV2
+        )
+    except OSError as e:
+        logger.error(f"example.txt unable to be opened: {e}")
+        bot.send_message(chat_id=message.chat.id,
+                         text="❌ Failed to load the rules document.")
+
 
 def send_welcome(message):
     """Handles the start cmd sending a welcome message"""
@@ -74,12 +99,10 @@ def send_welcome(message):
                  "Welcome! 🎉 I’m your bot. How can I assist you today?")
 
 
-
-def set_ban_lenth(message):
+def set_ban_length(message):
     """Handles request to change alloted time for ban lengths"""
     bot.reply_to(message, "Type default ban lenght to set ")
     bot.register_next_step_handler(message, process_ban_length)
-
 
 
 def set_warning_threshold(message):
@@ -92,16 +115,16 @@ def process_delete_rule(message):
     """process deletion in json"""
     try:
         index_to_pop = int(message.text)
-        with open(file_path, 'r') as file:
-            rules = json.load(file)
+        with open(file_path, 'r') as f:
+            rules = json.load(f)
 
         keys = list(rules.keys())
         if 0 <= index_to_pop < len(keys):
             removed_key = keys[index_to_pop]
             removed_rule = rules.pop(removed_key)
 
-            with open("rules.json", 'w') as file:
-                json.dump(rules, file, indent=4)
+            with open("rules.json", 'w') as f:
+                json.dump(rules, f, indent=4)
             logger.info(f"Rule {removed_rule} deleted from rules.json")
             bot.reply_to(message, f"Rule {removed_rule} deleted")
 
@@ -144,8 +167,8 @@ def process_flag_word(message):
     new_flag = message.text.strip()  # strip space from json
     try:
         if os.path.exists(flag_word_file_path):
-            with open(flag_word_file_path, 'r') as file:
-                flags = json.load(file)
+            with open(flag_word_file_path, 'r') as f:
+                flags = json.load(f)
                 if not isinstance(flags, list):
                     flags = []
 
@@ -158,8 +181,8 @@ def process_flag_word(message):
     if new_flag not in flags:
         flags.append(new_flag)
 
-    with open(flag_word_file_path, 'w') as file:
-        json.dump(flags, file, indent=4)
+    with open(flag_word_file_path, 'w') as f:
+        json.dump(flags, f, indent=4)
 
     logger.info(f"The word {new_flag} was added to the flaggedwords.json")
     bot.reply_to(message, f"Flagged word added {new_flag}")
@@ -170,8 +193,8 @@ def process_rule_book(message):
     new_rule = message.text.strip()
     try:
         if os.path.exists(rule_file_path):
-            with open(rule_file_path, 'r') as file:
-                rules = json.load(file)
+            with open(rule_file_path, 'r') as f:
+                rules = json.load(f)
         else:
             rules = {}
     except (FileNotFoundError, json.JSONDecodeError):
@@ -181,12 +204,11 @@ def process_rule_book(message):
     new_key = f"rule_{len(rules) + 1}"
     rules[new_key] = {"rule": new_rule}
 
-    with open(rule_file_path, 'w') as file:
-        json.dump(rules, file, indent=4)
+    with open(rule_file_path, 'w') as f:
+        json.dump(rules, f, indent=4)
 
     logger.info(f"The rule {new_rule} was added to rules.json")
     bot.reply_to(message, f"Rule added: {new_rule}")
-
 
 
 def analyze_and_respond(message):
@@ -217,4 +239,3 @@ def analyze_and_respond(message):
         return
 
     bot.reply_to(message, analysis_result)
-
