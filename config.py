@@ -3,7 +3,6 @@ from dotenv import load_dotenv
 import telebot
 from logger_config import logger
 
-
 # Load .env contents
 load_dotenv()
 
