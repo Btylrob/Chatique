@@ -2,9 +2,16 @@ import logging
 import pandas as pd
 import torch
 import emoji
+import bot_commands
 from transformers import pipeline
 from sentence_transformers import SentenceTransformer, util
 from logger_config import logger
+
+
+url = None
+emoji = None
+
+
 
 # ─────────────────────────────────────────────
 # 🔠 Load sentence embedding model
@@ -116,8 +123,11 @@ def analyze_text(text):
         results.append(f"⚠️ Flagged Emoji Detected: '{emoji_found}'")
 
     # URL check
-    has_url, url_found = contains_flagged_url(text)
-    if has_url:
+    if url == False:
+        logger.info("url detection off")
+
+    elif url == True:
+        url_found = contains_flagged_url(text)
         results.append(f"⚠️ Flagged URL Detected: '{url_found}'")
 
     # Similar-word check
