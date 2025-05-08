@@ -15,6 +15,6 @@ def register_handlers():
     bot.message_handler(commands=['setban', 'sb'])(set_ban_length)
     bot.message_handler(commands=['sw', 'setwarning'])(set_warning_threshold)
     bot.message_handler(commands=['ch', 'help'])(chatique_help)
-    bot.message_handler(commands=['toggle_url', 't-url'])(turn_off_url)
+    bot.message_handler(commands=['toggle_url', 't'])(turn_off_url)
     """Roberta Model And Text Detection"""
     bot.message_handler(func=lambda msg: True)(analyze_and_respond)
