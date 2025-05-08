@@ -1,15 +1,24 @@
 import os
 import json
 import html
+import time
 import mistune
+import analyzetext
 from config import bot, user_warning, warning_threshold, ban_length, banned_list
 from logger_config import logger
-from analyzetext import analyze_text
+from analyzetext import *
 
 rule_file_path = "rules.json"
 flag_word_file_path = "flaggedwords.json"
 
+
 # Handler Functions
+
+def turn_off_url(message):
+    """toggles url detection"""
+    analyzetext.url = not analyzetext.url
+    logger.info(f"set to {url}")
+
 
 
 def add_ban_list(user_id: int):
@@ -212,30 +221,40 @@ def process_rule_book(message):
 
 
 def analyze_and_respond(message):
-    """Analyze and respond to all incoming message through telegram and pass warning functions"""
+    """Analyze and respond to incoming Telegram message and apply warning logic"""
     user_id = message.from_user.id
     chat_id = message.chat.id
     analysis_result = analyze_text(message.text)
 
-    if "🚫 Hate Speech Detected" in analysis_result or "⚠️ Banned: Detected similar word" in analysis_result or "⚠️ Flagged Emoji Detected":
-        user_warning[user_id] = user_warning.get(user_id, 0) + 1
-
+    # Handle unset warning threshold
     if warning_threshold is None or warning_threshold == 0:
         logger.info("No set warning threshold for users")
         bot.reply_to(message, "There is no current warning limit on users.")
         return
 
-    if user_warning.get(user_id, 0) > warning_threshold:
-        logger.info(
-            f"{message.from_user.first_name} has been banned for {ban_length} days"
-        )
-        bot.reply_to(message, "user has been banned contents logged")
-        bot.reply_to(
-            message,
-            f"At {time.ctime()} User: {message.from_user.first_name} has been warned over {warning_threshold} time to stop spreading vulgar language and hate speach. {message.from_user.first_name} will be banned until {ban_length}."
-        )
-        add_ban_list(message.from_user.first_name)
-        bot.kick_chat_member(chat_id, user_id)
-        return
+    # Check for flagged content
+    if (
+        "🚫 Hate Speech Detected" in analysis_result or
+        "⚠️ Banned: Detected similar word" in analysis_result or
+        "⚠️ Flagged Emoji Detected" in analysis_result or
+        "⚠️ Flagged URL Detected" in analysis_result
+    ):
+        user_warning[user_id] = user_warning.get(user_id, 0) + 1
+        logger.info(f"User {user_id} warning count: {user_warning[user_id]}")
 
+        if user_warning[user_id] > warning_threshold:
+            logger.info(
+                f"{message.from_user.first_name} has been banned for {ban_length} days"
+            )
+            bot.reply_to(message, "User has been banned. Contents logged.")
+            bot.reply_to(
+                message,
+                f"At {time.ctime()}, user {message.from_user.first_name} exceeded the warning threshold ({warning_threshold}) "
+                f"for vulgar or hateful content. Banned until {ban_length} days from now."
+            )
+            add_ban_list(message.from_user.first_name)
+            bot.kick_chat_member(chat_id, user_id)
+            return
+
+    # Normal reply if not banned
     bot.reply_to(message, analysis_result)
