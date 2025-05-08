@@ -19,6 +19,11 @@ def turn_off_url(message):
     analyzetext.url = bool(1 - analyzetext.url)
     logger.info(f"set to {url}")
 
+def toggle_emojis(message):
+    """toggles 18+ emoji detection"""
+    analyzetext.nsfwemoji = bool(1 - analyzetext.nsfwemoji)
+    logger.info(f"set toggle to {nsfwemoji}")
+
 
 
 def add_ban_list(user_id: int):
