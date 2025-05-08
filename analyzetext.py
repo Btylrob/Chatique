@@ -6,19 +6,17 @@ import bot_commands
 from transformers import pipeline
 from sentence_transformers import SentenceTransformer, util
 from logger_config import logger
+import re
 
-
-url = None
-emoji = None
-
-
-
-# ─────────────────────────────────────────────
-# 🔠 Load sentence embedding model
+# Load embedeed model
 embedding_model = SentenceTransformer("all-MiniLM-L6-v2")
 
-# ─────────────────────────────────────────────
-# 🌐 Load flagged URL extensions
+
+#load urls for toggleded values
+global url 
+url = True
+
+#load urls from url.csv
 try:
     pf = pd.read_csv("csv_data/url.csv")  # using real header
     flagged_url = [
@@ -29,21 +27,29 @@ try:
         f"✅ Loaded {len(flagged_url)} flagged URL extensions from url.csv.")
     print(f"✅ Loaded {len(flagged_url)} flagged URL extensions.")
 except FileNotFoundError:
-    log.error("❌ url.csv not found.")
+    logger.error("❌ url.csv not found.")
     print("❌ url.csv not found.")
     flagged_url = []
 
 
 def contains_flagged_url(text):
     text = text.lower()
-    for ext in flagged_url:
-        if ext in text:
-            return True, ext
+
+    # Skip text containing '/t' or if '/' is used by itself
+    if '/t' in text or text == '/':
+        return False, None
+
+    # Use regex to detect URLs in the text
+    url_pattern = r'http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\\(\\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+'
+    if re.search(url_pattern, text):
+        # Check for flagged URL extensions
+        for ext in flagged_url:
+            if ext in text:
+                return True, ext  # Return the flagged extension
     return False, None
 
 
-# ─────────────────────────────────────────────
-# 😊 Load flagged emojis
+# Load flagged emojis
 try:
     emoji_df = pd.read_csv("csv_data/Emoji.csv")  # uses header
     flagged_emojis = [
@@ -53,7 +59,7 @@ try:
         f"✅ Loaded {len(flagged_emojis)} flagged emojis from Emoji.csv.")
     print(f"✅ Loaded {len(flagged_emojis)} flagged emojis.")
 except FileNotFoundError:
-    log.error("❌ Emoji.csv not found.")
+    logger.error("❌ Emoji.csv not found.")
     print("❌ Emoji.csv not found.")
     flagged_emojis = []
 
@@ -111,9 +117,7 @@ def detect_vulgar_language(text):
         return f"🚫 Hate Speech Detected (Confidence: {score:.2f})"
     return f"✅ No hate detected (Confidence: {score:.2f})"
 
-
-# ─────────────────────────────────────────────
-# 📊 Main analysis function
+# Main analasis function
 def analyze_text(text):
     results = []
 
@@ -124,11 +128,12 @@ def analyze_text(text):
 
     # URL check
     if url == False:
-        logger.info("url detection off")
+        logger.info("URL detection off")
 
     elif url == True:
-        url_found = contains_flagged_url(text)
-        results.append(f"⚠️ Flagged URL Detected: '{url_found}'")
+        url_found, flagged_ext = contains_flagged_url(text)
+        if url_found:
+            results.append(f"⚠️ Flagged URL Detected: '{flagged_ext}'")
 
     # Similar-word check
     is_flagged, flagged_word, similarity = contains_similar_flagged_word(text)
