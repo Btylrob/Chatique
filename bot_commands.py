@@ -16,7 +16,7 @@ flag_word_file_path = "flaggedwords.json"
 
 def turn_off_url(message):
     """toggles url detection"""
-    analyzetext.url = not analyzetext.url
+    analyzetext.url = bool(1 - analyzetext.url)
     logger.info(f"set to {url}")
 
 
