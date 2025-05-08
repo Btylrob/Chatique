@@ -11,10 +11,12 @@ import re
 # Load embedeed model
 embedding_model = SentenceTransformer("all-MiniLM-L6-v2")
 
-
 #load urls for toggleded values
-global url 
+global url
 url = True
+
+global nsfwemoji
+nsfwemoji = True
 
 #load urls from url.csv
 try:
@@ -117,14 +119,19 @@ def detect_vulgar_language(text):
         return f"🚫 Hate Speech Detected (Confidence: {score:.2f})"
     return f"✅ No hate detected (Confidence: {score:.2f})"
 
+
 # Main analasis function
 def analyze_text(text):
     results = []
 
     # Emoji check
-    has_emoji, emoji_found = contains_flagged_emoji(text)
-    if has_emoji:
-        results.append(f"⚠️ Flagged Emoji Detected: '{emoji_found}'")
+    if nsfwemoji == True:
+        logger.info("Emoji detection off")
+
+    elif nsfwemoji == False:
+        emoji_found, flagged_emoji = contains_flagged_emoji(text)
+        if emoji_found:
+            results.append(f"⚠️ Flagged Emoji Detected: '{flagged_emoji}'")
 
     # URL check
     if url == False:
