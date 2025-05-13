@@ -11,7 +11,7 @@ import re
 # Load embedeed model
 embedding_model = SentenceTransformer("all-MiniLM-L6-v2")
 
-#load urls for toggleded values
+#load global variables for toggle functionality
 global url
 url = True
 
@@ -74,17 +74,16 @@ def contains_flagged_emoji(text):
     return False, None
 
 
-# ─────────────────────────────────────────────
-# 🚫 Load flagged words and encode them
+# Load english csv data
 try:
-    word_df = pd.read_csv("csv_data/English.csv")  # uses header
+    word_df = pd.read_csv("csv_data/English.csv")
     flagged_words = [str(word).lower() for word in word_df["word"].tolist()]
     flagged_word_embeddings = embedding_model.encode(flagged_words,
                                                      convert_to_tensor=True)
     logger.info(
         f"✅ Loaded and encoded {len(flagged_words)} flagged words from English.csv."
     )
-    print(f"✅ Loaded and encoded {len(flagged_words)} flagged words.")
+    logger.info(f"✅ Loaded and encoded {len(flagged_words)} flagged words.")
 except FileNotFoundError:
     logger.error("❌ English.csv not found.")
     print("❌ English.csv not found.")
@@ -105,8 +104,7 @@ def contains_similar_flagged_word(text, threshold=0.7):
     return False, None, None
 
 
-# ─────────────────────────────────────────────
-# 🧠 Load hate speech classifier
+# Load robert-hate-speech classifier
 classifier = pipeline("text-classification",
                       model="facebook/roberta-hate-speech-dynabench-r4-target")
 
