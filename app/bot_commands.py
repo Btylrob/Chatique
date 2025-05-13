@@ -3,6 +3,8 @@ import json
 import html
 import time
 import mistune
+import mysql.connector
+from db.database import cursor, db
 import analyzetext
 from config import bot, user_warning, warning_threshold, ban_length, banned_list
 from logger_config import logger
@@ -208,26 +210,25 @@ def process_flag_word(message):
 
 
 def process_rule_book(message):
-    """insert rule into json file"""
+    """Insert rule into MySQL database"""
+    chat_id = message.chat.id
     new_rule = message.text.strip()
+
     try:
-        if os.path.exists(rule_file_path):
-            with open(rule_file_path, 'r') as f:
-                rules = json.load(f)
-        else:
-            rules = {}
-    except (FileNotFoundError, json.JSONDecodeError):
-        logger.error("rules.json not found in repository")
-        rules = {}
+        # Prepare the SQL query
+        query = "INSERT INTO rules (chat_id, rule_text) VALUES (%s, %s)"
+        # Execute the query with values
+        cursor.execute(query, (chat_id, new_rule))
+        # Commit the transaction to save the data
+        db.commit()
 
-    new_key = f"rule_{len(rules) + 1}"
-    rules[new_key] = {"rule": new_rule}
+        logger.info(f"Rule added for chat {chat_id}: {new_rule}")
+        bot.reply_to(message, f"Rule added: {new_rule}")
+    
+    except mysql.connector.Error as e:
+        logger.error(f"Error adding rule: {e}")
+        bot.reply_to(message, "❌ Failed to add rule.")
 
-    with open(rule_file_path, 'w') as f:
-        json.dump(rules, f, indent=4)
-
-    logger.info(f"The rule {new_rule} was added to rules.json")
-    bot.reply_to(message, f"Rule added: {new_rule}")
 
 # button menus
 @bot.message_handler(commands=['toggle_menu'])
