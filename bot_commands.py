@@ -18,7 +18,7 @@ flag_word_file_path = "flaggedwords.json"
 def toggle_urls():
     """toggles url detection"""
     analyzetext.url = bool(1 - analyzetext.url)
-    new_state = "OFF ❌" if analyzetext.url else "ON ✅"
+    new_state = "ON ✅" if analyzetext.url else "OFF ❌"
     logger.info(f"set to {url}")
     return f"Url Detection is now {new_state}"
 
@@ -230,10 +230,12 @@ def process_rule_book(message):
     bot.reply_to(message, f"Rule added: {new_rule}")
 
 # button menus
-@bot.message_handler(commands=['toggle_emojis'])
+@bot.message_handler(commands=['toggle_menu'])
 def send_welcome(message):
     markup = types.InlineKeyboardMarkup()
     btn = types.InlineKeyboardButton(text="18+ Emoji Detection", callback_data="toggle_emoji_btn")
+    markup.add(btn)
+    btn = types.InlineKeyboardButton(text="URL Detection", callback_data="toggle_urls_btn")
     markup.add(btn)
     bot.send_message(message.chat.id, "Toggle Menu:", reply_markup=markup)
 
@@ -241,6 +243,13 @@ def send_welcome(message):
 @bot.callback_query_handler(func=lambda call: call.data == "toggle_emoji_btn")
 def callback_hello(call):
     result = toggle_emojis()
+    bot.edit_message_text(chat_id=call.message.chat.id,
+                          message_id=call.message.message_id,
+                          text=result)
+
+@bot.callback_query_handler(func=lambda call: call.data == "toggle_urls_btn")
+def callback_hello(call):
+    result = toggle_urls()
     bot.edit_message_text(chat_id=call.message.chat.id,
                           message_id=call.message.message_id,
                           text=result)
