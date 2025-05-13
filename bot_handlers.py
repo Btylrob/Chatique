@@ -2,7 +2,7 @@ from config import bot
 from bot_commands import (send_welcome, set_flagged_word, delete_rule,
                           set_rule, list_banned_users, list_rules,
                           set_ban_length, chatique_help, set_warning_threshold,
-                          analyze_and_respond, turn_off_url, toggle_emojis)
+                          analyze_and_respond, toggle_urls, toggle_emojis)
 
 
 def register_handlers():
@@ -15,7 +15,7 @@ def register_handlers():
     bot.message_handler(commands=['setban', 'sb'])(set_ban_length)
     bot.message_handler(commands=['sw', 'setwarning'])(set_warning_threshold)
     bot.message_handler(commands=['ch', 'help'])(chatique_help)
-    bot.message_handler(commands=['toggle_url', 't'])(turn_off_url)
-    bot.message_handler(commands=['te'])(toggle_emojis)
+    bot.message_handler(commands=['toggle_url', 't'])(toggle_urls)
+    bot.message_handler(commands=['toggle'])(toggle_emojis)
     """Roberta Model And Text Detection"""
     bot.message_handler(func=lambda msg: True)(analyze_and_respond)
